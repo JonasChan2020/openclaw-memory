@@ -175,6 +175,46 @@ You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it
 - Commit and push your own changes
 - **Review and update MEMORY.md** (see below)
 
+## 💾 记忆系统 (重要!)
+
+### 记忆文件结构
+```
+memory/
+├── MEMORY.md                 # 核心长期记忆 (必须存在!)
+├── sync-status.md            # 同步状态记录
+├── YYYY-MM-DD.md             # 每日会话日志
+├── projects/                 # 项目知识库
+│   ├── adminnet.md
+│   ├── frontend.md
+│   └── ...
+├── skills/                   # 技能积累
+└── decisions/                # 重要决策
+
+~/memory_backup/              # 本地自动备份
+```
+
+### 记忆写入规则 (必须遵守!)
+
+**每次会话开始时**:
+1. 读取 MEMORY.md
+2. 读取 memory/YYYY-MM-DD.md (今日)
+3. 读取 memory/YYYY-MM-DD.md (昨日)
+
+**每次会话结束时** (强制!):
+1. 总结今日学习 → 写入 memory/YYYY-MM-DD.md
+2. 重要发现 → 更新 MEMORY.md
+3. 运行 `./scripts/sync-memory.sh`
+
+**同步位置**:
+- Git 本地仓库 (`~/clawd/.git`)
+- GitHub (待 token 配置)
+- NAS (`\\192.168.3.6\JonasWorkSpace\memory`)
+
+**手动同步命令**:
+```bash
+./scripts/sync-memory.sh
+```
+
 ### 🔄 Memory Maintenance (During Heartbeats)
 Periodically (every few days), use a heartbeat to:
 1. Read through recent `memory/YYYY-MM-DD.md` files
