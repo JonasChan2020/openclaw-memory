@@ -1,7 +1,7 @@
 # 🤖 OpenClaw 长期记忆系统
 
-> 最后更新: 2026-02-12
-> 备份: GitHub + NAS
+> 最后更新: 2026-02-12 10:30
+> 备份: GitHub + NAS + 本地
 
 ---
 
@@ -16,72 +16,108 @@
 
 ## 项目知识库
 
-### Admin.NET 项目
-- **位置**: `/Users/hao/clawd/模板小工具APP系统设计.md`
-- **框架**: Furion + Vue3 + Element Plus
-- **模块**: ToolsSystem (模板、订阅、反馈、工具配置)
-- **状态**: 已完成核心功能开发
+### Admin.NET 项目 (核心!)
 
-### 前后端架构
+#### 项目代码位置
+- **前端**: `/Users/hao/Documents/CODES/NEWCODE/ADMIN.NET.PRO/Web/src/views/ToolsSystem/`
+- **后端**: `/Users/hao/Documents/CODES/NEWCODE/ADMIN.NET.PRO/Admin.NET/Admin.NET.ToolsSystem/`
+- **设计文档**: `/Users/hao/clawd/模板小工具APP系统设计.md`
 
-#### 前端 (Web/src/views/ToolsSystem/)
-- overview/index.vue - 数据概览仪表盘 ✅
-- content/template/ - 模板管理 ✅
-- content/category/ - 分类管理
-- subscription/ - 订阅管理
-- tools/ - 工具配置
-- feedback/ - 反馈管理
-- user/ - 用户管理
+#### 技术栈
+| 层级 | 技术 | 说明 |
+|------|------|------|
+| 后端框架 | **Furion** | 极简启动 `Serve.Run()` |
+| ORM | **SqlSugar** | 仓储模式 |
+| 前端框架 | **Vue3 + TypeScript** | Composition API |
+| UI组件库 | **Element Plus** | 响应式布局 |
+| API规范 | **RESTful** | `/api/toolsystem/*` |
 
-#### 后端 (Admin.NET.Pro/ToolsSystem/)
-- Entity/ - 业务实体 (Template, Subscription, Feedback, etc.)
-- Service/ - 业务服务
-- Controller/ - API 控制器
-- Startup.cs - 模块注册
+#### 已完成模块 ✅
 
-### 发现的问题
+**1. 模板管理 (Template)**
+- Entity: Template.cs (名称、类型、分类、预览图、资源链接、下载计数)
+- Service: TemplateService.cs (分页查询、详情、下载权限校验)
+- Controller: TemplateController.cs
 
-| 问题 | 位置 | 严重度 | 状态 |
-|------|------|--------|------|
-| 部分页面状态管理不统一 | Vue 组件 | 🟡 中 | 待修复 |
-| 缺少加载状态统一处理 | API 调用 | 🟡 中 | 待修复 |
-| 错误提示可优化 | ElMessage | 🟢 低 | 待修复 |
+**2. 订阅系统 (Subscription)**
+- Entity: SubscriptionPlan.cs, SubscriptionOrder.cs, UserSubscription.cs
+- Service: SubscriptionService.cs (套餐管理、订单创建、支付回调、状态查询)
+- 订单状态: Pending → Paid
+- 支持续费和新购
+
+**3. 反馈系统 (Feedback)**
+- Entity: Feedback.cs, FeedbackReply.cs
+- Service: FeedbackService.cs (创建反馈、分页查询、回复、统计)
+- 状态: 0待处理 → 1处理中 → 2已解决 → 3已关闭
+
+**5. 用户管理 (ToolsUser)**
+- Entity: SysUser, ActualUserExt (用户扩展信息)
+- Service: ToolsUserService.cs
+- 功能: 用户分页、统计、类型设置、种子数据
+
+**6. 工具配置 (ToolConfig)**
+- Entity: ToolConfig.cs, ToolUsageLog.cs
+- Service: ToolConfigService.cs
+- 功能: 工具CRUD、使用统计、启用/禁用、文件上传
+
+**5. 工具使用日志**
+- Entity: ToolUsageLog.cs, TemplateUsageLog.cs
+
+#### 发现的问题
+
+| 问题 | 严重度 | 状态 |
+|------|--------|------|
+| 部分页面状态管理不统一 | 🟡 中 | 待修复 |
+| 缺少加载状态统一处理 | 🟡 中 | 待修复 |
+| 错误提示可优化 | 🟢 低 | 待修复 |
 
 ---
 
-## 学习积累
+## 核心代码模式
 
-### Furion 框架核心 (已掌握)
-
+### Furion 启动
 ```csharp
-// 启动方式
-Serve.Run();
+Serve.Run();  // 极简启动
 
-// 模块注册
-[AppStartup]
-public class MyModule { }
-
-// 配置读取
-App.GetConfig<string>("Key");
+[AppStartup(110)]
+public class Startup : AppStartup {
+    public void ConfigureServices(IServiceCollection services) { }
+    public void Configure(IApplicationBuilder app) { }
+}
 ```
 
-### Admin.NET 结构
+### SqlSugar 仓储 + 服务
+```csharp
+// 依赖注入
+private readonly SqlSugarRepository<Template> _repo;
+private readonly UserManager _userManager;
 
+public TemplateService(SqlSugarRepository<Template> repo, UserManager userManager) {
+    _repo = repo;
+    _userManager = userManager;
+}
+
+// 分页查询
+_repo.AsQueryable()
+    .WhereIF(condition, predicate)
+    .OrderByDescending(u => u.CreateTime)
+    .Select(dto => new Dto { ... })
+    .ToPagedList(page, pageSize);
 ```
-Admin.NET.Pro/
-├── Admin.NET.Web.Entry    # 程序入口
-├── Admin.NET.Core         # 核心层
-├── Admin.NET.Application  # 应用服务层
-├── Admin.NET.Web.Core     # Web中间件
-└── Admin.NET.ToolsSystem # 业务模块
+
+### Vue3 + Composition API
+```typescript
+// API 调用
+import request from '/@/utils/request';
+export function getTemplatePage(params) {
+    return request({ url: '/api/toolsystem/template/page', method: 'get', params });
+}
+
+// 组件
+const stats = [
+    { label: '总用户数', value: '12,458', change: '+12.5%', icon: '👥' }
+];
 ```
-
-### 前后端交互
-
-- API 前缀: `/api/*`
-- 返回格式: `{ code: 0|非0, message, data }`
-- 认证: `Authorization: Bearer <token>`
-- 菜单: 动态从后端获取，禁止硬编码
 
 ---
 
@@ -90,54 +126,41 @@ Admin.NET.Pro/
 ### 2026-02-12: 建立长期记忆机制
 
 **决策**:
-- 建立 MEMORY.md + memory/ 目录结构
-- 双重备份: GitHub + NAS GitLab
-- 每次重要学习/决策后立即写入
-- 每日会话记录到 memory/YYYY-MM-DD.md
-
-**行动**:
-- [x] 创建 memory 目录结构
-- [x] 创建 MEMORY.md 核心记忆
-- [x] Git 初始化并推送到 GitHub
-- [x] 同步到 NAS
+- ✅ 建立 MEMORY.md + memory/ 目录结构
+- ✅ 三重备份: GitHub + NAS + 本地
+- ✅ 每次重要学习/决策后立即写入
+- ✅ 每日会话记录到 memory/YYYY-MM-DD.md
 
 ---
 
 ## 连接信息 (机密)
 
-### NAS (192.168.3.6)
-- **用途**: 远程备份、资料存储
-- **路径**: \\192.168.3.6\JonasWorkSpace\memory
-- **协议**: Samba/SMB
+### GitHub
+- **账号**: ccskiller@163.com
+- **仓库**: https://github.com/JonasChan2020/openclaw-memory
+- **Token**: [REMOVED_TOKEN]
 
-### GitHub (ccskiller@163.com)
-- **用途**: 版本控制、云端备份
-- **仓库**: 待创建
+### NAS (192.168.3.6)
+- **路径**: /Volumes/JonasWorkSpace/memory/
+- **用户**: jonas
 
 ---
 
 ## 待办
 
-### 短期 (本周)
-- [ ] 完成前端代码深度阅读
-- [ ] 理解移动端 Mobile 项目
+### 即时任务 (2小时内)
+- [x] 找到项目代码位置 ✅
+- [x] 学习前后端核心架构 ✅
+- [x] 沉淀知识到 MEMORY.md ✅
+- [ ] 学习用户系统、工具系统
+- [ ] 同步到所有备份位置
+
+### 本周目标
+- [ ] 完整理解所有模块
+- [ ] 能独立添加新功能
 - [ ] 制定完整开发计划
 
-### 中期 (本月)
-- [ ] 修复已发现的问题
-- [ ] 建立自动化测试
-- [ ] 完善文档
-
-### 长期
-- [ ] 持续学习、积累、优化
-- [ ] 形成真正的自主能力
-
 ---
 
-## 笔记
-
-> 重要的不是记住所有细节，而是记住那些改变认知的模式。
-
----
-
-*记忆更新: 2026-02-12 10:00*
+*记忆更新: 2026-02-12 10:30*
+*代码学习: 深度阅读 Template, Subscription, Feedback 三大模块*
