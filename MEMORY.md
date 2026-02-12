@@ -119,6 +119,43 @@ const stats = [
 ];
 ```
 
+### Docker 部署
+
+**配置文件位置**: `/Users/hao/Documents/CODES/NEWCODE/ADMIN.NET.PRO/docker/`
+
+**服务端口映射**:
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| Nginx | 9100 (HTTP), 9103 (HTTPS) | 前端页面 |
+| MySQL | 9101 | 数据库 |
+| Redis | 6379 | 缓存 |
+| .NET API | 9102 | 后端接口 |
+| MinIO | 9104 (API), 9105 (控制台) | 对象存储 |
+| TDengine | 6030, 6041 | 时序数据库 |
+
+**部署步骤**:
+```bash
+# 1. 编译后端
+dotnet publish -c Release
+
+# 2. 复制发布文件到 docker/app/
+cp -r bin/Release/net9.0/* docker/app/
+
+# 3. 编译前端
+npm install && npm run build
+
+# 4. 复制前端到 docker/nginx/dist/
+cp -r dist/* docker/nginx/dist/
+
+# 5. 启动容器
+docker-compose up -d
+```
+
+**NAS Docker 管理**:
+- 地址: 192.168.3.6:5000
+- 应用: Container Manager
+- 可通过 Web UI 管理容器
+
 ---
 
 ## 重要决策
@@ -135,32 +172,12 @@ const stats = [
 
 ## 连接信息 (机密)
 
-### GitHub
-- **账号**: ccskiller@163.com
-- **仓库**: https://github.com/JonasChan2020/openclaw-memory
-- **Token**: [已移除-存储在 keychain 中]
-
 ### NAS (192.168.3.6)
 - **路径**: /Volumes/JonasWorkSpace/memory/
 - **用户**: jonas
+- **Docker 管理**: 192.168.3.6:5000 (Container Manager)
 
 ---
 
-## 待办
-
-### 即时任务 (2小时内)
-- [x] 找到项目代码位置 ✅
-- [x] 学习前后端核心架构 ✅
-- [x] 沉淀知识到 MEMORY.md ✅
-- [ ] 学习用户系统、工具系统
-- [ ] 同步到所有备份位置
-
-### 本周目标
-- [ ] 完整理解所有模块
-- [ ] 能独立添加新功能
-- [ ] 制定完整开发计划
-
----
-
-*记忆更新: 2026-02-12 10:30*
-*代码学习: 深度阅读 Template, Subscription, Feedback 三大模块*
+*记忆更新: 2026-02-12 10:40*
+*新增: Docker 部署配置、端口映射、NAS Container Manager*
