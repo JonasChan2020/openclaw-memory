@@ -18,13 +18,13 @@
 
 | 时间 | GitHub | NAS | 本地备份 |
 |------|--------|-----|----------|
-| 2026-02-12 10:00 | ✗ (需token) | ✗ (需手动挂载) | ✓ |
+| 2026-02-12 10:11 | ✓ GitHub | ✓ NAS | ✓ |
 
-## 待解决
+## ✅ 全部就绪
 
-- [ ] GitHub token 认证问题
-- [ ] NAS 自动挂载
-- [ ] GitLab (192.168.3.6:5000) 连接测试
+- ✅ GitHub: https://github.com/JonasChan2020/openclaw-memory
+- ✅ NAS: /Volumes/JonasWorkSpace/memory/
+- ✅ 本地: ~/memory_backup/
 
 ## 手动同步命令
 
