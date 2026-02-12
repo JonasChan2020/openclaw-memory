@@ -138,7 +138,7 @@ const stats = [
 ### GitHub
 - **账号**: ccskiller@163.com
 - **仓库**: https://github.com/JonasChan2020/openclaw-memory
-- **Token**: [REMOVED_TOKEN]
+- **Token**: [已移除-存储在 keychain 中]
 
 ### NAS (192.168.3.6)
 - **路径**: /Volumes/JonasWorkSpace/memory/
